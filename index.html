@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIBEIRO — Sistema Premium de Controle Financeiro Pessoal</title>
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #0a3a2a;
+            --primary-light: #124e38;
+            --accent: #d4af37;
+            --success: #10b981;
+            --success-bg: #ecfdf5;
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --sidebar-width: 260px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --radius: 12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
+        aside { width: var(--sidebar-width); background-color: var(--primary); color: #fff; display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; z-index: 100; transition: transform .3s ease; }
+        .brand-box { padding: 24px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,.1); }
+        .brand-box i { color: var(--accent); font-size: 24px; }
+        .brand-box h1 { font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; }
+        .sidebar-menu { list-style: none; padding: 20px 12px; flex: 1; }
+        .sidebar-menu li { margin-bottom: 6px; }
+        .sidebar-menu a { display: flex; align-items: center; gap: 14px; padding: 12px 16px; color: #cbd5e1; text-decoration: none; border-radius: 8px; font-weight: 500; transition: all .2s; }
+        .sidebar-menu a:hover, .sidebar-menu a.active { background-color: var(--primary-light); color: #fff; }
+        .sidebar-menu a.active i { color: var(--accent); }
+        .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,.1); font-size: 12px; color: #94a3b8; }
+        .sidebar-footer .backup-actions { margin-top: 10px; display: flex; gap: 8px; }
+        .sidebar-footer button { background: rgba(255,255,255,.1); border: none; color: #fff; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; transition: background .2s; }
+        .sidebar-footer button:hover { background: rgba(255,255,255,.2); }
+        main { margin-left: var(--sidebar-width); flex: 1; padding: 30px; max-width: calc(100vw - var(--sidebar-width)); padding-bottom: 90px; }
+        header.top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; gap: 16px; }
+        .header-title h2 { font-size: 24px; font-weight: 700; color: var(--primary); }
+        .header-title p { font-size: 14px; color: var(--text-muted); }
+        .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid var(--border); padding: 10px 0; z-index: 1000; justify-content: space-around; box-shadow: 0 -4px 10px rgba(0,0,0,.05); }
+        .mobile-nav a { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-muted); font-size: 11px; gap: 4px; }
+        .mobile-nav a i { font-size: 18px; }
+        .mobile-nav a.active { color: var(--primary); font-weight: 600; }
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: fadeIn .3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: var(--card-bg); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow-sm); border: 1px solid var(--border); position: relative; overflow: hidden; }
+        .stat-card::after { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+        .stat-card.green::after { background: var(--success); } .stat-card.danger::after { background: var(--danger); } .stat-card.accent::after { background: var(--accent); } .stat-card.primary::after { background: var(--primary); }
+        .stat-card .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .stat-card .card-header span { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+        .stat-card .card-header i { font-size: 18px; color: var(--text-muted); }
+        .stat-card .card-value { font-size: 26px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
+        .stat-card .card-desc { font-size: 12px; color: var(--text-muted); }
+        .quick-actions { background: var(--card-bg); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 30px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+        .quick-actions h3 { font-size: 15px; font-weight: 600; margin-right: 10px; color: var(--primary); }
+        .btn { background: var(--primary); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background .2s, transform .1s; text-decoration: none; }
+        .btn:hover { background: var(--primary-light); } .btn:active { transform: scale(.98); }
+        .btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--border); }
+        .btn-outline:hover { background: var(--bg-main); color: var(--primary); }
+        .btn-success { background: var(--success); } .btn-success:hover { background: #059669; }
+        .btn-danger { background: var(--danger); } .btn-danger:hover { background: #dc2626; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+        .filters-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .filter-chip { padding: 6px 12px; background: #fff; border: 1px solid var(--border); border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--text-muted); transition: all .2s; }
+        .filter-chip.active, .filter-chip:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .search-box { position: relative; }
+        .search-box input { padding: 8px 14px 8px 36px; border-radius: 8px; border: 1px solid var(--border); font-size: 13px; outline: none; width: 220px; background: #fff; }
+        .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 13px; }
+        .records-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .record-card { background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border); padding: 20px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: space-between; position: relative; min-width: 0; }
+        .record-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+        .record-title { font-size: 16px; font-weight: 700; color: var(--text-main); overflow-wrap: anywhere; }
+        .record-subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; overflow-wrap: anywhere; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; white-space: nowrap; }
+        .badge-pending { background: #fef3c7; color: #d97706; } .badge-partial { background: #e0f2fe; color: #0284c7; } .badge-paid { background: var(--success-bg); color: var(--success); }
+        .record-details { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 12px 0; margin-bottom: 14px; font-size: 13px; }
+        .detail-row { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 6px; } .detail-row:last-child { margin-bottom: 0; }
+        .detail-label { color: var(--text-muted); } .detail-val { font-weight: 600; text-align: right; }
+        .record-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .goal-card { background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border); padding: 24px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
+        .progress-container { margin: 16px 0; } .progress-info { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+        .progress-bar-bg { background: var(--border); border-radius: 10px; height: 10px; width: 100%; overflow: hidden; }
+        .progress-bar-fill { background: var(--success); height: 100%; border-radius: 10px; transition: width .4s ease; }
+        .empty-state { background: var(--card-bg); border: 1px dashed var(--border); border-radius: var(--radius); padding: 40px 20px; text-align: center; grid-column: 1 / -1; }
+        .empty-state i { font-size: 40px; color: var(--text-muted); margin-bottom: 12px; } .empty-state h4 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+        .empty-state p { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; justify-content: center; align-items: center; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity .2s; padding: 16px; }
+        .modal-overlay.open { opacity: 1; pointer-events: auto; }
+        .modal { background: var(--card-bg); width: 100%; max-width: 500px; border-radius: var(--radius); box-shadow: 0 20px 25px -5px rgba(0,0,0,.1); overflow: hidden; transform: translateY(10px); transition: transform .2s; max-height: 90vh; display: flex; flex-direction: column; }
+        .modal-overlay.open .modal { transform: translateY(0); }
+        .modal-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { font-size: 18px; font-weight: 700; color: var(--primary); }
+        .modal-close { background: transparent; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted); }
+        .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+        .form-group { margin-bottom: 16px; } .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
+        .form-control { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; background: #fff; color: var(--text-main); }
+        .form-control:focus { border-color: var(--primary); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .modal-footer { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg-main); }
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: var(--primary); color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 10px; animation: slideIn .3s ease, fadeOut .3s ease 2.7s forwards; }
+        .toast.success { background: var(--success); } .toast.error { background: var(--danger); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; transform: translateY(-10px); } }
+        .activity-list { background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+        .activity-item { padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
+        .activity-item:last-child { border-bottom: none; } .activity-info { min-width: 0; overflow-wrap: anywhere; }
+        .activity-info strong { display: block; color: var(--text-main); margin-bottom: 2px; } .activity-info span { color: var(--text-muted); font-size: 11px; }
+        .activity-val { font-weight: 700; white-space: nowrap; }
+        @media(max-width: 900px) {
+            aside { transform: translateX(-100%); }
+            main { margin-left: 0; max-width: 100vw; width: 100%; padding: 16px; padding-bottom: 80px; }
+            .mobile-nav { display: flex; }
+            .dashboard-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+            .records-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 12px; }
+        }
+        @media(max-width: 520px) {
+            header.top-header { align-items: flex-start; flex-direction: column; }
+            .header-title h2 { font-size: 21px; }
+            .stat-card .card-value { font-size: 22px; }
+            .dashboard-grid { grid-template-columns: 1fr 1fr; }
+            .stat-card { padding: 15px 12px; }
+            .stat-card .card-header span { font-size: 10px; }
+            .stat-card .card-value { font-size: 18px; overflow-wrap: anywhere; }
+            .stat-card .card-desc { font-size: 10px; }
+            .form-row { grid-template-columns: 1fr; gap: 0; }
+            .search-box, .search-box input { width: 100%; }
+            .section-header { align-items: stretch; }
+            .filters-group { width: 100%; }
+            .activity-item { padding: 12px; }
+            .modal-footer .btn { padding: 9px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="brand-box"><i class="fa-solid fa-vault"></i><h1>RIBEIRO</h1></div>
+        <ul class="sidebar-menu">
+            <li><a href="#" class="active" onclick="switchTab('inicio', this); return false;"><i class="fa-solid fa-house"></i> Início</a></li>
+            <li><a href="#" onclick="switchTab('dividas', this); return false;"><i class="fa-solid fa-file-invoice-dollar"></i> Minhas Dívidas</a></li>
+            <li><a href="#" onclick="switchTab('areceber', this); return false;"><i class="fa-solid fa-hand-holding-dollar"></i> A Receber</a></li>
+            <li><a href="#" onclick="switchTab('metas', this); return false;"><i class="fa-solid fa-bullseye"></i> Minhas Metas</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <p>Dados salvos neste navegador.</p>
+            <div class="backup-actions">
+                <button onclick="exportData()"><i class="fa-solid fa-download"></i> Exportar</button>
+                <button onclick="importDataPrompt()"><i class="fa-solid fa-upload"></i> Importar</button>
+            </div>
+        </div>
+    </aside>
+
+    <nav class="mobile-nav">
+        <a href="#" class="active" onclick="switchTab('inicio', this); return false;"><i class="fa-solid fa-house"></i> Início</a>
+        <a href="#" onclick="switchTab('dividas', this); return false;"><i class="fa-solid fa-file-invoice-dollar"></i> Dívidas</a>
+        <a href="#" onclick="switchTab('areceber', this); return false;"><i class="fa-solid fa-hand-holding-dollar"></i> A Receber</a>
+        <a href="#" onclick="switchTab('metas', this); return false;"><i class="fa-solid fa-bullseye"></i> Metas</a>
+    </nav>
+
+    <main>
+        <div id="toast-container"></div>
+        <section id="inicio" class="view-section active">
+            <header class="top-header"><div class="header-title"><h2>Painel Financeiro</h2><p>Bem-vindo ao RIBEIRO, seu controle financeiro pessoal.</p></div></header>
+            <div class="dashboard-grid">
+                <div class="stat-card green"><div class="card-header"><span>Dinheiro a Receber</span><i class="fa-solid fa-arrow-trend-up"></i></div><div class="card-value" id="dash-a-receber">R$ 0,00</div><div class="card-desc">Soma pendente de empréstimos e vendas</div></div>
+                <div class="stat-card danger"><div class="card-header"><span>Minhas Dívidas</span><i class="fa-solid fa-arrow-trend-down"></i></div><div class="card-value" id="dash-dividas">R$ 0,00</div><div class="card-desc">Valor total que ainda preciso pagar</div></div>
+                <div class="stat-card primary"><div class="card-header"><span>Dinheiro Recebido</span><i class="fa-solid fa-wallet"></i></div><div class="card-value" id="dash-recebido">R$ 0,00</div><div class="card-desc">Total efetivamente recebido de terceiros</div></div>
+                <div class="stat-card accent"><div class="card-header"><span>Minhas Metas</span><i class="fa-solid fa-bullseye"></i></div><div class="card-value" id="dash-metas">0 cadastradas</div><div class="card-desc" id="dash-metas-desc">Progresso geral: 0%</div></div>
+            </div>
+            <div class="quick-actions"><h3>Atalhos Rápidos:</h3><button class="btn btn-sm" onclick="openModal('modal-divida')"><i class="fa-solid fa-plus"></i> Registrar Dívida</button><button class="btn btn-sm" onclick="openModal('modal-areceber')"><i class="fa-solid fa-plus"></i> Registrar a Receber</button><button class="btn btn-sm" onclick="openModal('modal-meta')"><i class="fa-solid fa-plus"></i> Adicionar Meta</button></div>
+            <div class="section-header"><h3 style="font-size:16px;color:var(--primary);font-weight:700;">Atividades Recentes</h3></div>
+            <div class="activity-list" id="recent-activities"><div class="empty-state" style="padding:20px;border:none;"><p>Nenhuma atividade recente registrada.</p></div></div>
+        </section>
+
+        <section id="dividas" class="view-section">
+            <header class="top-header"><div class="header-title"><h2>Minhas Dívidas</h2><p>Controle exclusivo do dinheiro que você deve a terceiros.</p></div><button class="btn" onclick="openModal('modal-divida')"><i class="fa-solid fa-plus"></i> Nova Dívida</button></header>
+            <div class="section-header"><div class="filters-group"><span class="filter-chip active" onclick="filterDividas('todos', this)">Todas</span><span class="filter-chip" onclick="filterDividas('pendente', this)">Pendentes</span><span class="filter-chip" onclick="filterDividas('parcial', this)">Parciais</span><span class="filter-chip" onclick="filterDividas('quitada', this)">Quitadas</span></div><div class="search-box"><i class="fa-solid fa-search"></i><input type="text" id="search-dividas" placeholder="Pesquisar credor ou descrição..." oninput="renderDividas()"></div></div>
+            <div class="records-grid" id="grid-dividas"></div>
+        </section>
+
+        <section id="areceber" class="view-section">
+            <header class="top-header"><div class="header-title"><h2>A Receber</h2><p>Empréstimos concedidos, vendas a prazo e outros valores.</p></div><button class="btn" onclick="openModal('modal-areceber')"><i class="fa-solid fa-plus"></i> Novo Valor a Receber</button></header>
+            <div class="section-header"><div class="filters-group"><span class="filter-chip active" onclick="filterAReceber('todos', this)">Todos</span><span class="filter-chip" onclick="filterAReceber('emprestimo', this)">Empréstimos</span><span class="filter-chip" onclick="filterAReceber('venda', this)">Vendas</span><span class="filter-chip" onclick="filterAReceber('outro', this)">Outros</span><span class="filter-chip" onclick="filterAReceber('pendente', this)">Pendentes</span><span class="filter-chip" onclick="filterAReceber('quitada', this)">Quitados</span></div><div class="search-box"><i class="fa-solid fa-search"></i><input type="text" id="search-areceber" placeholder="Pesquisar por nome ou descrição..." oninput="renderAReceber()"></div></div>
+            <div class="records-grid" id="grid-areceber"></div>
+        </section>
+
+        <section id="metas" class="view-section">
+            <header class="top-header"><div class="header-title"><h2>Minhas Metas</h2><p>Acompanhe seus objetivos e o dinheiro guardado com segurança.</p></div><button class="btn" onclick="openModal('modal-meta')"><i class="fa-solid fa-plus"></i> Nova Meta</button></header>
+            <div class="records-grid" id="grid-metas"></div>
+        </section>
+    </main>
+
+    <div class="modal-overlay" id="modal-divida"><div class="modal"><div class="modal-header"><h3>Registrar Nova Dívida</h3><button class="modal-close" onclick="closeModal('modal-divida')"><i class="fa-solid fa-xmark"></i></button></div><div class="modal-body"><form id="form-divida" onsubmit="saveDivida(event)">
+        <div class="form-group"><label>Credor (Nome da pessoa/empresa)*</label><input type="text" class="form-control" id="div-credor" required placeholder="Ex: Banco ou João"></div>
+        <div class="form-group"><label>Descrição da dívida*</label><input type="text" class="form-control" id="div-desc" required placeholder="Ex: Empréstimo pessoal"></div>
+        <div class="form-row"><div class="form-group"><label>Valor Total (R$)*</label><input type="number" min="0.01" step="0.01" class="form-control" id="div-valor" required placeholder="0,00"></div><div class="form-group"><label>Data da Dívida*</label><input type="date" class="form-control" id="div-data" required></div></div>
+        <div class="form-row"><div class="form-group"><label>Data de Vencimento (Opcional)</label><input type="date" class="form-control" id="div-venc"></div></div>
+        <div class="form-group"><label>Observações</label><textarea class="form-control" id="div-obs" rows="2" placeholder="Notas adicionais..."></textarea></div>
+    </form></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-divida')">Cancelar</button><button class="btn" onclick="document.getElementById('form-divida').requestSubmit()">Salvar Dívida</button></div></div></div>
+
+    <div class="modal-overlay" id="modal-pagar-divida"><div class="modal"><div class="modal-header"><h3>Registrar Pagamento de Dívida</h3><button class="modal-close" onclick="closeModal('modal-pagar-divida')"><i class="fa-solid fa-xmark"></i></button></div><div class="modal-body"><form id="form-pagar-divida" onsubmit="savePagamentoDivida(event)">
+        <input type="hidden" id="pag-div-id"><div class="form-group"><label>Saldo Restante Atual: <strong id="pag-div-saldo-atual">R$ 0,00</strong></label></div>
+        <div class="form-group"><label>Valor do Pagamento (R$)*</label><input type="number" min="0.01" step="0.01" class="form-control" id="pag-div-valor" required placeholder="0,00"></div>
+        <div class="form-group"><label>Data do Pagamento*</label><input type="date" class="form-control" id="pag-div-data" required></div>
+        <div class="form-group"><label>Observação (Opcional)</label><input type="text" class="form-control" id="pag-div-obs" placeholder="Ex: PIX parcelado"></div>
+    </form></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-pagar-divida')">Cancelar</button><button class="btn btn-success" onclick="document.getElementById('form-pagar-divida').requestSubmit()">Confirmar Pagamento</button></div></div></div>
+
+    <div class="modal-overlay" id="modal-areceber"><div class="modal"><div class="modal-header"><h3>Novo Valor a Receber</h3><button class="modal-close" onclick="closeModal('modal-areceber')"><i class="fa-solid fa-xmark"></i></button></div><div class="modal-body">
+        <div class="form-group"><label>Tipo de Registro*</label><select class="form-control" id="ar-tipo" onchange="toggleARFormType()"><option value="emprestimo">Empréstimo</option><option value="venda">Venda de Produto</option><option value="outro">Outro Valor</option></select></div>
+        <form id="form-areceber" onsubmit="saveAReceber(event)">
+            <div class="form-group"><label id="ar-label-nome">Nome da pessoa*</label><input type="text" class="form-control" id="ar-nome" required placeholder="Nome completo"></div>
+            <div id="fields-emprestimo">
+                <div class="form-row"><div class="form-group"><label>Valor Emprestado (R$)*</label><input type="number" min="0.01" step="0.01" class="form-control" id="ar-emp-valor" required placeholder="0,00"></div><div class="form-group"><label>Data do Empréstimo*</label><input type="date" class="form-control" id="ar-emp-data" required></div></div>
+                <div class="form-row"><div class="form-group"><label>Incidência de Juros?</label><select class="form-control" id="ar-emp-juros-ativo" onchange="toggleJurosFields()"><option value="nao">Não</option><option value="sim">Sim</option></select></div><div class="form-group" id="group-juros-taxa" style="display:none;"><label>Taxa de Juros (%)</label><input type="number" min="0" step="0.01" class="form-control" id="ar-emp-taxa" placeholder="Ex: 2.5"></div></div>
+                <div class="form-group" id="group-juros-periodo" style="display:none;"><label>Periodicidade dos Juros</label><select class="form-control" id="ar-emp-periodo"><option value="mensal">Mensal</option><option value="anual">Anual</option></select></div>
+            </div>
+            <div id="fields-venda" style="display:none;">
+                <div class="form-group"><label>Nome do Produto*</label><input type="text" class="form-control" id="ar-venda-produto" placeholder="Ex: Caixa de som"></div>
+                <div class="form-row"><div class="form-group"><label>Quantidade*</label><input type="number" min="1" step="1" class="form-control" id="ar-venda-qtd" value="1" oninput="calcVendaTotal()"></div><div class="form-group"><label>Preço Unitário (R$)*</label><input type="number" min="0.01" step="0.01" class="form-control" id="ar-venda-preco" placeholder="0,00" oninput="calcVendaTotal()"></div></div>
+                <div class="form-group"><label>Valor Total da Venda: <strong id="ar-venda-total-preview" style="color:var(--success)">R$ 0,00</strong></label></div>
+                <div class="form-row"><div class="form-group"><label>Data da Venda*</label><input type="date" class="form-control" id="ar-venda-data"></div><div class="form-group"><label>Forma de Pagamento</label><input type="text" class="form-control" id="ar-venda-forma" placeholder="Ex: Parcelado em 3x"></div></div>
+            </div>
+            <div id="fields-outro" style="display:none;">
+                <div class="form-group"><label>Descrição do Valor*</label><input type="text" class="form-control" id="ar-outro-desc" placeholder="Ex: Serviço prestado"></div>
+                <div class="form-row"><div class="form-group"><label>Valor (R$)*</label><input type="number" min="0.01" step="0.01" class="form-control" id="ar-outro-valor" placeholder="0,00"></div><div class="form-group"><label>Data do Registro*</label><input type="date" class="form-control" id="ar-outro-data"></div></div>
+            </div>
+            <div class="form-group"><label>Observações Gerais</label><textarea class="form-control" id="ar-obs" rows="2" placeholder="Notas adicionais..."></textarea></div>
+        </form>
+    </div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-areceber')">Cancelar</button><button class="btn" onclick="document.getElementById('form-areceber').requestSubmit()">Salvar Registro</button></div></div></div>
+
+    <div class="modal-overlay" id="modal-receber-valor"><div class="modal"><div class="modal-header"><h3>Registrar Recebimento</h3><button class="modal-close" onclick="closeModal('modal-receber-valor')"><i class="fa-solid fa-xmark"></i></button></div><div class="modal-body"><form id="form-receber-valor" onsubmit="saveRecebimento(event)">
+        <input type="hidden" id="rec-id"><div class="form-group"><label>Saldo Pendente Atual: <strong id="rec-saldo-atual">R$ 0,00</strong></label></div>
+        <div class="form-group"><label>Valor Recebido (R$)*</label><input type="number" min="0.01" step="0.01" class="form-control" id="rec-valor" required placeholder="0,00"></div>
+        <div class="form-group"><label>Data do Recebimento*</label><input type="date" class="form-control" id="rec-data" required></div>
+        <div class="form-group"><label>Observação (Opcional)</label><input type="text" class="form-control" id="rec-obs" placeholder="Ex: PIX recebido"></div>
+    </form></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-receber-valor')">Cancelar</button><button class="btn btn-success" onclick="document.getElementById('form-receber-valor').requestSubmit()">Confirmar Recebimento</button></div></div></div>
+
+    <div class="modal-overlay" id="modal-meta"><div class="modal"><div class="modal-header"><h3>Criar Nova Meta Financeira</h3><button class="modal-close" onclick="closeModal('modal-meta')"><i class="fa-solid fa-xmark"></i></button></div><div class="modal-body"><form id="form-meta" onsubmit="saveMeta(event)">
+        <div class="form-group"><label>Nome da Meta*</label><input type="text" class="form-control" id="meta-nome" required placeholder="Ex: Reserva de emergência"></div>
+        <div class="form-row"><div class="form-group"><label>Valor Desejado (R$)*</label><input type="number" min="0.01" step="0.01" class="form-control" id="meta-valor" required placeholder="0,00"></div><div class="form-group"><label>Valor Inicial Guardado (Opcional)</label><input type="number" min="0" step="0.01" class="form-control" id="meta-inicial" value="0" placeholder="0,00"></div></div>
+        <div class="form-row"><div class="form-group"><label>Prazo Desejado (Opcional)</label><input type="date" class="form-control" id="meta-prazo"></div></div>
+        <div class="form-group"><label>Descrição / Objetivo</label><textarea class="form-control" id="meta-desc" rows="2" placeholder="Detalhes da sua meta..."></textarea></div>
+    </form></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-meta')">Cancelar</button><button class="btn" onclick="document.getElementById('form-meta').requestSubmit()">Criar Meta</button></div></div></div>
+
+    <div class="modal-overlay" id="modal-add-meta"><div class="modal"><div class="modal-header"><h3>Adicionar Dinheiro à Meta</h3><button class="modal-close" onclick="closeModal('modal-add-meta')"><i class="fa-solid fa-xmark"></i></button></div><div class="modal-body"><form id="form-add-meta" onsubmit="saveDepositoMeta(event)">
+        <input type="hidden" id="dep-meta-id"><div class="form-group"><label>Valor a Adicionar (R$)*</label><input type="number" min="0.01" step="0.01" class="form-control" id="dep-valor" required placeholder="0,00"></div>
+        <div class="form-group"><label>Data do Depósito*</label><input type="date" class="form-control" id="dep-data" required></div>
+        <div class="form-group"><label>Observação (Opcional)</label><input type="text" class="form-control" id="dep-obs" placeholder="Ex: Economia mensal"></div>
+    </form></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-add-meta')">Cancelar</button><button class="btn btn-success" onclick="document.getElementById('form-add-meta').requestSubmit()">Adicionar Dinheiro</button></div></div></div>
+
+    <div class="modal-overlay" id="modal-historico"><div class="modal"><div class="modal-header"><h3 id="hist-modal-title">Histórico de Movimentações</h3><button class="modal-close" onclick="closeModal('modal-historico')"><i class="fa-solid fa-xmark"></i></button></div><div class="modal-body" id="hist-modal-content"></div><div class="modal-footer"><button class="btn" onclick="closeModal('modal-historico')">Fechar</button></div></div></div>
+
+    <script>
+        let db = { dividas: [], areceber: [], metas: [] };
+        let currentDividaFilter = 'todos';
+        let currentARFilter = 'todos';
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadFromStorage();
+            setDefaultDates();
+            updateDashboard();
+            renderDividas();
+            renderAReceber();
+            renderMetas();
+            renderRecentActivities();
+            toggleARFormType();
+        });
+
+        function localToday() {
+            const now = new Date();
+            const offset = now.getTimezoneOffset();
+            return new Date(now.getTime() - offset * 60000).toISOString().split('T')[0];
+        }
+        function setDefaultDates() {
+            const today = localToday();
+            ['div-data','pag-div-data','ar-emp-data','ar-venda-data','ar-outro-data','rec-data','dep-data'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el && !el.value) el.value = today;
+            });
+        }
+        function normalizeDB() {
+            db.dividas = Array.isArray(db.dividas) ? db.dividas : [];
+            db.areceber = Array.isArray(db.areceber) ? db.areceber : [];
+            db.metas = Array.isArray(db.metas) ? db.metas : [];
+            db.dividas.forEach(d => d.pagamentos = Array.isArray(d.pagamentos) ? d.pagamentos : []);
+            db.areceber.forEach(a => a.recebimentos = Array.isArray(a.recebimentos) ? a.recebimentos : []);
+            db.metas.forEach(m => m.depositos = Array.isArray(m.depositos) ? m.depositos : []);
+        }
+        function saveToStorage() {
+            try {
+                localStorage.setItem('ribeiro_finance_db', JSON.stringify(db));
+                updateDashboard();
+                renderRecentActivities();
+            } catch (e) {
+                showToast('Não foi possível salvar os dados neste navegador.', 'error');
+            }
+        }
+        function loadFromStorage() {
+            const data = localStorage.getItem('ribeiro_finance_db');
+            if (data) {
+                try { db = JSON.parse(data); normalizeDB(); }
+                catch (e) { console.error('Erro ao carregar dados', e); db = {dividas:[], areceber:[], metas:[]}; }
+            }
+        }
+        function switchTab(tabId) {
+            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.sidebar-menu a, .mobile-nav a').forEach(item => item.classList.remove('active'));
+            const section = document.getElementById(tabId);
+            if (section) section.classList.add('active');
+            document.querySelectorAll(`[onclick*="switchTab('${tabId}'"]`).forEach(node => node.classList.add('active'));
+            window.scrollTo(0, 0);
+        }
+        function formatMoney(val) {
+            return Number(val || 0).toLocaleString('pt-BR', {style:'currency',currency:'BRL'});
+        }
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const parts = dateStr.split('-');
+            return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : dateStr;
+        }
+        function escapeHTML(value) {
+            return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+        }
+        function showToast(msg, type='success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icon = document.createElement('i');
+            icon.className = `fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}`;
+            toast.append(icon, document.createTextNode(' ' + msg));
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        function openModal(modalId) { setDefaultDates(); document.getElementById(modalId).classList.add('open'); }
+        function closeModal(modalId) { document.getElementById(modalId).classList.remove('open'); }
+        document.querySelectorAll('.modal-overlay').forEach(overlay => overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); }));
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open')); });
+
+        function saveDivida(e) {
+            e.preventDefault();
+            const valorTotal = parseFloat(document.getElementById('div-valor').value);
+            if (!Number.isFinite(valorTotal) || valorTotal <= 0) return showToast('Informe um valor válido para a dívida.', 'error');
+            db.dividas.push({
+                id:'div_'+Date.now(), credor:document.getElementById('div-credor').value.trim(),
+                descricao:document.getElementById('div-desc').value.trim(), valorTotal,
+                data:document.getElementById('div-data').value, vencimento:document.getElementById('div-venc').value,
+                observacoes:document.getElementById('div-obs').value.trim(), pagamentos:[]
+            });
+            saveToStorage(); closeModal('modal-divida'); document.getElementById('form-divida').reset();
+            renderDividas(); showToast('Dívida registrada com sucesso!');
+        }
+        function filterDividas(status, el) {
+            currentDividaFilter = status;
+            document.querySelectorAll('#dividas .filter-chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active'); renderDividas();
+        }
+        function renderDividas() {
+            const grid = document.getElementById('grid-dividas');
+            const search = document.getElementById('search-dividas').value.toLowerCase();
+            grid.innerHTML = '';
+            const filtered = db.dividas.filter(d => {
+                const matchSearch = (d.credor || '').toLowerCase().includes(search) || (d.descricao || '').toLowerCase().includes(search);
+                const totalPago = d.pagamentos.reduce((a,p) => a + Number(p.valor || 0), 0);
+                const saldo = Number(d.valorTotal || 0) - totalPago;
+                const sit = saldo <= 0.01 ? 'quitada' : totalPago > 0 ? 'parcial' : 'pendente';
+                return (currentDividaFilter === 'todos' || sit === currentDividaFilter) && matchSearch;
+            });
+            if (!filtered.length) {
+                grid.innerHTML = `<div class="empty-state"><i class="fa-solid fa-file-invoice-dollar"></i><h4>${search || currentDividaFilter !== 'todos' ? 'Nenhuma dívida encontrada.' : 'Você ainda não registrou nenhuma dívida.'}</h4><p>Adicione dívidas para controlar seus compromissos financeiros.</p><button class="btn btn-sm" onclick="openModal('modal-divida')"><i class="fa-solid fa-plus"></i> Nova Dívida</button></div>`;
+                return;
+            }
+            filtered.forEach(d => {
+                const totalPago = d.pagamentos.reduce((a,p) => a + Number(p.valor || 0), 0);
+                const saldo = Math.max(0, Number(d.valorTotal || 0) - totalPago);
+                const sit = saldo <= 0.01 ? 'quitada' : totalPago > 0 ? 'parcial' : 'pendente';
+                const badgeClass = sit === 'quitada' ? 'badge-paid' : sit === 'parcial' ? 'badge-partial' : 'badge-pending';
+                const sitLabel = sit === 'quitada' ? 'Quitada' : sit === 'parcial' ? 'Parcialmente Paga' : 'Pendente';
+                const card = document.createElement('div'); card.className = 'record-card';
+                card.innerHTML = `<div><div class="record-card-top"><div><div class="record-title">${escapeHTML(d.credor)}</div><div class="record-subtitle">${escapeHTML(d.descricao)}</div></div><span class="badge ${badgeClass}">${sitLabel}</span></div><div class="record-details">
+                    <div class="detail-row"><span class="detail-label">Valor Original:</span><span class="detail-val">${formatMoney(d.valorTotal)}</span></div>
+                    <div class="detail-row"><span class="detail-label">Já Pago:</span><span class="detail-val" style="color:var(--success)">${formatMoney(totalPago)}</span></div>
+                    <div class="detail-row"><span class="detail-label">Saldo Restante:</span><span class="detail-val" style="color:var(--danger)">${formatMoney(saldo)}</span></div>
+                    <div class="detail-row"><span class="detail-label">Vencimento:</span><span class="detail-val">${formatDate(d.vencimento)}</span></div></div></div>
+                    <div class="record-actions">${sit !== 'quitada' ? `<button class="btn btn-sm btn-success" onclick="openPagamentoDivida('${d.id}')">Pagar</button>` : ''}<button class="btn btn-sm btn-outline" onclick="viewHistoricoDivida('${d.id}')">Histórico</button></div>`;
+                grid.appendChild(card);
+            });
+        }
+        function openPagamentoDivida(id) {
+            const d = db.dividas.find(x => x.id === id); if (!d) return;
+            const pago = d.pagamentos.reduce((a,p) => a + Number(p.valor || 0), 0);
+            document.getElementById('pag-div-id').value = id;
+            document.getElementById('pag-div-saldo-atual').innerText = formatMoney(Math.max(0, d.valorTotal - pago));
+            document.getElementById('pag-div-valor').value = ''; document.getElementById('pag-div-valor').max = Math.max(0, d.valorTotal - pago).toFixed(2);
+            document.getElementById('pag-div-obs').value = ''; openModal('modal-pagar-divida');
+        }
+        function savePagamentoDivida(e) {
+            e.preventDefault();
+            const id = document.getElementById('pag-div-id').value;
+            const valor = parseFloat(document.getElementById('pag-div-valor').value);
+            const data = document.getElementById('pag-div-data').value;
+            const obs = document.getElementById('pag-div-obs').value.trim();
+            const d = db.dividas.find(x => x.id === id); if (!d) return;
+            const pago = d.pagamentos.reduce((a,p) => a + Number(p.valor || 0), 0);
+            const saldo = Math.max(0, d.valorTotal - pago);
+            if (!Number.isFinite(valor) || valor <= 0) return showToast('Informe um valor de pagamento válido.', 'error');
+            if (valor > saldo + 0.001) return showToast('O pagamento não pode ser maior que o saldo restante.', 'error');
+            d.pagamentos.push({valor,data,obs}); saveToStorage(); closeModal('modal-pagar-divida'); renderDividas();
+            document.getElementById('form-pagar-divida').reset(); setDefaultDates(); showToast('Pagamento registrado com sucesso!');
+        }
+        function viewHistoricoDivida(id) {
+            const d = db.dividas.find(x => x.id === id); if (!d) return;
+            document.getElementById('hist-modal-title').innerText = `Histórico: ${d.credor}`;
+            let html = `<p style="margin-bottom:12px;font-size:13px;color:var(--text-muted)">Dívida contraída em ${formatDate(d.data)} — Valor total: ${formatMoney(d.valorTotal)}</p>`;
+            if (!d.pagamentos.length) html += `<p style="text-align:center;padding:20px;color:var(--text-muted)">Nenhum pagamento registrado até o momento.</p>`;
+            else {
+                html += '<div class="activity-list">';
+                d.pagamentos.forEach((p,i) => { html += `<div class="activity-item"><div class="activity-info"><strong>Pagamento #${i+1}${p.obs ? ' — '+escapeHTML(p.obs) : ''}</strong><span>Data: ${formatDate(p.data)}</span></div><div class="activity-val" style="color:var(--success)">${formatMoney(p.valor)}</div></div>`; });
+                html += '</div>';
+            }
+            document.getElementById('hist-modal-content').innerHTML = html; openModal('modal-historico');
+        }
+
+        function toggleARFormType() {
+            const tipo = document.getElementById('ar-tipo').value;
+            ['emprestimo','venda','outro'].forEach(t => {
+                const box = document.getElementById('fields-'+t);
+                box.style.display = tipo === t ? 'block' : 'none';
+                box.querySelectorAll('input,select,textarea').forEach(el => {
+                    if (el.id === 'ar-emp-juros-ativo' || el.id === 'ar-emp-periodo') return;
+                    el.required = tipo === t && (el.dataset.optional !== 'true') && ['ar-venda-forma'].indexOf(el.id) === -1;
+                });
+            });
+            document.getElementById('ar-label-nome').innerText = tipo === 'venda' ? 'Nome do Comprador*' : 'Nome da Pessoa*';
+            toggleJurosFields();
+        }
+        function toggleJurosFields() {
+            const active = document.getElementById('ar-emp-juros-ativo').value === 'sim';
+            document.getElementById('group-juros-taxa').style.display = active ? 'block' : 'none';
+            document.getElementById('group-juros-periodo').style.display = active ? 'block' : 'none';
+            document.getElementById('ar-emp-taxa').required = active && document.getElementById('ar-tipo').value === 'emprestimo';
+        }
+        function calcVendaTotal() {
+            const qtd = parseFloat(document.getElementById('ar-venda-qtd').value) || 0;
+            const preco = parseFloat(document.getElementById('ar-venda-preco').value) || 0;
+            document.getElementById('ar-venda-total-preview').innerText = formatMoney(qtd * preco);
+        }
+        function saveAReceber(e) {
+            e.preventDefault();
+            const tipo = document.getElementById('ar-tipo').value;
+            const nome = document.getElementById('ar-nome').value.trim();
+            const novo = {id:'ar_'+Date.now(),tipo,nome,observacoes:document.getElementById('ar-obs').value.trim(),recebimentos:[]};
+            if (tipo === 'emprestimo') {
+                novo.valor = parseFloat(document.getElementById('ar-emp-valor').value); novo.data = document.getElementById('ar-emp-data').value;
+                novo.jurosAtivo = document.getElementById('ar-emp-juros-ativo').value === 'sim';
+                novo.taxaJuros = novo.jurosAtivo ? parseFloat(document.getElementById('ar-emp-taxa').value) || 0 : 0;
+                novo.periodoJuros = document.getElementById('ar-emp-periodo').value;
+            } else if (tipo === 'venda') {
+                const qtd = parseInt(document.getElementById('ar-venda-qtd').value,10);
+                const preco = parseFloat(document.getElementById('ar-venda-preco').value);
+                novo.produto = document.getElementById('ar-venda-produto').value.trim(); novo.quantidade = qtd; novo.precoUnitario = preco;
+                novo.valor = qtd * preco; novo.data = document.getElementById('ar-venda-data').value; novo.formaPagamento = document.getElementById('ar-venda-forma').value.trim();
+            } else {
+                novo.descricao = document.getElementById('ar-outro-desc').value.trim(); novo.valor = parseFloat(document.getElementById('ar-outro-valor').value); novo.data = document.getElementById('ar-outro-data').value;
+            }
+            if (!Number.isFinite(novo.valor) || novo.valor <= 0) return showToast('Informe um valor válido.', 'error');
+            db.areceber.push(novo); saveToStorage(); closeModal('modal-areceber'); document.getElementById('form-areceber').reset();
+            document.getElementById('ar-tipo').value = 'emprestimo'; toggleARFormType(); calcVendaTotal(); setDefaultDates(); renderAReceber(); showToast('Valor a receber registrado com sucesso!');
+        }
+        function filterAReceber(filter, el) {
+            currentARFilter = filter; document.querySelectorAll('#areceber .filter-chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active'); renderAReceber();
+        }
+        function renderAReceber() {
+            const grid = document.getElementById('grid-areceber'); const search = document.getElementById('search-areceber').value.toLowerCase(); grid.innerHTML = '';
+            const filtered = db.areceber.filter(item => {
+                const desc = item.descricao || item.produto || item.tipo || '';
+                const match = (item.nome || '').toLowerCase().includes(search) || desc.toLowerCase().includes(search);
+                const received = item.recebimentos.reduce((a,r) => a + Number(r.valor || 0), 0);
+                const saldo = Number(item.valor || 0) - received;
+                const sit = saldo <= .01 ? 'quitada' : received > 0 ? 'parcial' : 'pendente';
+                if (['emprestimo','venda','outro'].includes(currentARFilter) && item.tipo !== currentARFilter) return false;
+                if (currentARFilter === 'pendente' && sit !== 'pendente') return false;
+                if (currentARFilter === 'quitada' && sit !== 'quitada') return false;
+                return match;
+            });
+            if (!filtered.length) {
+                grid.innerHTML = `<div class="empty-state"><i class="fa-solid fa-hand-holding-dollar"></i><h4>${search || currentARFilter !== 'todos' ? 'Nenhum valor encontrado.' : 'Nenhum valor a receber registrado.'}</h4><p>Cadastre empréstimos, vendas a prazo ou outros valores devidos a você.</p><button class="btn btn-sm" onclick="openModal('modal-areceber')"><i class="fa-solid fa-plus"></i> Novo Valor</button></div>`; return;
+            }
+            filtered.forEach(item => {
+                const received = item.recebimentos.reduce((a,r) => a + Number(r.valor || 0), 0);
+                const saldo = Math.max(0, Number(item.valor || 0) - received);
+                const sit = saldo <= .01 ? 'quitada' : received > 0 ? 'parcial' : 'pendente';
+                const badge = sit === 'quitada' ? 'badge-paid' : sit === 'parcial' ? 'badge-partial' : 'badge-pending';
+                const label = sit === 'quitada' ? 'Pago' : sit === 'parcial' ? 'Parcial' : 'Pendente';
+                const tipoLabel = item.tipo === 'emprestimo' ? 'Empréstimo' : item.tipo === 'venda' ? 'Venda de Produto' : 'Outro Valor';
+                const subtitle = item.tipo === 'venda' ? `${escapeHTML(item.produto)} (Qtd: ${item.quantidade})` : item.tipo === 'emprestimo' ? 'Empréstimo Pessoal' : escapeHTML(item.descricao);
+                const card = document.createElement('div'); card.className = 'record-card';
+                card.innerHTML = `<div><div class="record-card-top"><div><div class="record-title">${escapeHTML(item.nome)}</div><div class="record-subtitle">${tipoLabel} • ${subtitle}</div></div><span class="badge ${badge}">${label}</span></div><div class="record-details">
+                    <div class="detail-row"><span class="detail-label">Valor Original:</span><span class="detail-val">${formatMoney(item.valor)}</span></div>
+                    <div class="detail-row"><span class="detail-label">Já Recebido:</span><span class="detail-val" style="color:var(--success)">${formatMoney(received)}</span></div>
+                    <div class="detail-row"><span class="detail-label">Saldo Pendente:</span><span class="detail-val" style="color:var(--danger)">${formatMoney(saldo)}</span></div>
+                    <div class="detail-row"><span class="detail-label">Data:</span><span class="detail-val">${formatDate(item.data)}</span></div></div></div>
+                    <div class="record-actions">${sit !== 'quitada' ? `<button class="btn btn-sm btn-success" onclick="openRecebimentoModal('${item.id}')">Receber</button>` : ''}<button class="btn btn-sm btn-outline" onclick="viewHistoricoAR('${item.id}')">Histórico</button></div>`;
+                grid.appendChild(card);
+            });
+        }
+        function openRecebimentoModal(id) {
+            const item = db.areceber.find(x => x.id === id); if (!item) return;
+            const received = item.recebimentos.reduce((a,r) => a + Number(r.valor || 0), 0);
+            const saldo = Math.max(0, item.valor - received);
+            document.getElementById('rec-id').value = id; document.getElementById('rec-saldo-atual').innerText = formatMoney(saldo);
+            document.getElementById('rec-valor').value = ''; document.getElementById('rec-valor').max = saldo.toFixed(2);
+            document.getElementById('rec-obs').value = ''; openModal('modal-receber-valor');
+        }
+        function saveRecebimento(e) {
+            e.preventDefault();
+            const id = document.getElementById('rec-id').value, valor = parseFloat(document.getElementById('rec-valor').value);
+            const data = document.getElementById('rec-data').value, obs = document.getElementById('rec-obs').value.trim();
+            const item = db.areceber.find(x => x.id === id); if (!item) return;
+            const received = item.recebimentos.reduce((a,r) => a + Number(r.valor || 0), 0);
+            const saldo = Math.max(0, item.valor - received);
+            if (!Number.isFinite(valor) || valor <= 0) return showToast('Informe um valor de recebimento válido.', 'error');
+            if (valor > saldo + .001) return showToast('O recebimento não pode ser maior que o saldo pendente.', 'error');
+            item.recebimentos.push({valor,data,obs}); saveToStorage(); closeModal('modal-receber-valor'); renderAReceber();
+            document.getElementById('form-receber-valor').reset(); setDefaultDates(); showToast('Recebimento registrado com sucesso!');
+        }
+        function viewHistoricoAR(id) {
+            const item = db.areceber.find(x => x.id === id); if (!item) return;
+            document.getElementById('hist-modal-title').innerText = `Histórico: ${item.nome}`;
+            let html = `<p style="margin-bottom:12px;font-size:13px;color:var(--text-muted)">Registro de ${formatDate(item.data)} — Valor total: ${formatMoney(item.valor)}</p>`;
+            if (!item.recebimentos.length) html += `<p style="text-align:center;padding:20px;color:var(--text-muted)">Nenhum recebimento registrado até o momento.</p>`;
+            else {
+                html += '<div class="activity-list">';
+                item.recebimentos.forEach((r,i) => { html += `<div class="activity-item"><div class="activity-info"><strong>Recebimento #${i+1}${r.obs ? ' — '+escapeHTML(r.obs) : ''}</strong><span>Data: ${formatDate(r.data)}</span></div><div class="activity-val" style="color:var(--success)">${formatMoney(r.valor)}</div></div>`; });
+                html += '</div>';
+            }
+            document.getElementById('hist-modal-content').innerHTML = html; openModal('modal-historico');
+        }
+
+        function saveMeta(e) {
+            e.preventDefault();
+            const nome = document.getElementById('meta-nome').value.trim(), valorDesejado = parseFloat(document.getElementById('meta-valor').value);
+            const valorInicial = parseFloat(document.getElementById('meta-inicial').value) || 0;
+            if (!Number.isFinite(valorDesejado) || valorDesejado <= 0 || valorInicial < 0) return showToast('Confira os valores da meta.', 'error');
+            db.metas.push({id:'meta_'+Date.now(),nome,valorDesejado,valorInicial,prazo:document.getElementById('meta-prazo').value,descricao:document.getElementById('meta-desc').value.trim(),dataCriacao:localToday(),depositos:[]});
+            saveToStorage(); closeModal('modal-meta'); document.getElementById('form-meta').reset(); renderMetas(); showToast('Meta criada com sucesso!');
+        }
+        function renderMetas() {
+            const grid = document.getElementById('grid-metas'); grid.innerHTML = '';
+            if (!db.metas.length) {
+                grid.innerHTML = `<div class="empty-state"><i class="fa-solid fa-bullseye"></i><h4>Crie sua primeira meta e comece a acompanhar seu progresso financeiro.</h4><p>Defina objetivos de economia e visualize seu avanço diariamente.</p><button class="btn btn-sm" onclick="openModal('modal-meta')"><i class="fa-solid fa-plus"></i> Nova Meta</button></div>`; return;
+            }
+            db.metas.forEach(m => {
+                const deposits = m.depositos.reduce((a,d) => a + Number(d.valor || 0), 0), total = Number(m.valorInicial || 0) + deposits;
+                const falta = Math.max(0, m.valorDesejado - total), progresso = Math.min(100, Math.round(total / m.valorDesejado * 100));
+                const card = document.createElement('div'); card.className = 'goal-card';
+                card.innerHTML = `<div><div class="record-card-top"><div><div class="record-title">${escapeHTML(m.nome)}</div><div class="record-subtitle">${escapeHTML(m.descricao || 'Objetivo financeiro pessoal')}</div></div><span class="badge ${progresso >= 100 ? 'badge-paid' : 'badge-pending'}">${progresso}% Concluído</span></div>
+                    <div class="record-details"><div class="detail-row"><span class="detail-label">Valor Desejado:</span><span class="detail-val">${formatMoney(m.valorDesejado)}</span></div><div class="detail-row"><span class="detail-label">Já Guardado:</span><span class="detail-val" style="color:var(--success)">${formatMoney(total)}</span></div><div class="detail-row"><span class="detail-label">Falta Guardar:</span><span class="detail-val">${formatMoney(falta)}</span></div>${m.prazo ? `<div class="detail-row"><span class="detail-label">Prazo:</span><span class="detail-val">${formatDate(m.prazo)}</span></div>` : ''}</div>
+                    <div class="progress-container"><div class="progress-info"><span>Progresso</span><span>${progresso}%</span></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${progresso}%"></div></div></div></div>
+                    <div class="record-actions"><button class="btn btn-sm btn-success" onclick="openAddDepositoModal('${m.id}')"><i class="fa-solid fa-plus"></i> Adicionar Dinheiro</button><button class="btn btn-sm btn-outline" onclick="viewHistoricoMeta('${m.id}')">Ver Histórico</button></div>`;
+                grid.appendChild(card);
+            });
+        }
+        function openAddDepositoModal(id) { document.getElementById('dep-meta-id').value = id; document.getElementById('dep-valor').value = ''; document.getElementById('dep-obs').value = ''; openModal('modal-add-meta'); }
+        function saveDepositoMeta(e) {
+            e.preventDefault();
+            const id = document.getElementById('dep-meta-id').value, valor = parseFloat(document.getElementById('dep-valor').value);
+            const data = document.getElementById('dep-data').value, obs = document.getElementById('dep-obs').value.trim();
+            const m = db.metas.find(x => x.id === id); if (!m) return;
+            if (!Number.isFinite(valor) || valor <= 0) return showToast('Informe um valor válido para o depósito.', 'error');
+            m.depositos.push({valor,data,obs}); saveToStorage(); closeModal('modal-add-meta'); renderMetas();
+            document.getElementById('form-add-meta').reset(); setDefaultDates();
+            const total = (m.valorInicial || 0) + m.depositos.reduce((a,d) => a + d.valor, 0);
+            showToast(total >= m.valorDesejado ? 'Parabéns! Você atingiu seu objetivo financeiro!' : 'Você está mais perto de alcançar sua meta!');
+        }
+        function viewHistoricoMeta(id) {
+            const m = db.metas.find(x => x.id === id); if (!m) return;
+            document.getElementById('hist-modal-title').innerText = `Histórico da Meta: ${m.nome}`;
+            let html = `<p style="margin-bottom:12px;font-size:13px;color:var(--text-muted)">Criada em ${formatDate(m.dataCriacao)} — Objetivo: ${formatMoney(m.valorDesejado)}</p>`;
+            let acumulado = Number(m.valorInicial || 0);
+            if (acumulado > 0) html += `<div class="activity-item"><div class="activity-info"><strong>Valor Inicial Cadastrado</strong><span>Data de criação</span></div><div class="activity-val" style="color:var(--success)">${formatMoney(acumulado)}</div></div>`;
+            if (!m.depositos.length && !acumulado) html += `<p style="text-align:center;padding:20px;color:var(--text-muted)">Nenhum depósito registrado ainda.</p>`;
+            else if (m.depositos.length) {
+                html += '<div class="activity-list">';
+                m.depositos.forEach((dep,i) => { acumulado += Number(dep.valor || 0); html += `<div class="activity-item"><div class="activity-info"><strong>Depósito #${i+1}${dep.obs ? ' — '+escapeHTML(dep.obs) : ''}</strong><span>Data: ${formatDate(dep.data)} • Acumulado: ${formatMoney(acumulado)}</span></div><div class="activity-val" style="color:var(--success)">${formatMoney(dep.valor)}</div></div>`; });
+                html += '</div>';
+            }
+            document.getElementById('hist-modal-content').innerHTML = html; openModal('modal-historico');
+        }
+
+        function updateDashboard() {
+            let totalAR = 0, totalRecebido = 0;
+            db.areceber.forEach(item => { const rec = item.recebimentos.reduce((a,b) => a + Number(b.valor || 0), 0); totalRecebido += rec; totalAR += Math.max(0, Number(item.valor || 0) - rec); });
+            let totalDividas = 0;
+            db.dividas.forEach(d => { const pago = d.pagamentos.reduce((a,b) => a + Number(b.valor || 0), 0); totalDividas += Math.max(0, Number(d.valorTotal || 0) - pago); });
+            const qtd = db.metas.length;
+            let percentual = 0;
+            if (qtd) percentual = Math.round(db.metas.reduce((sum,m) => sum + Math.min(100, (Number(m.valorInicial || 0) + m.depositos.reduce((a,b) => a + Number(b.valor || 0), 0)) / m.valorDesejado * 100), 0) / qtd);
+            document.getElementById('dash-a-receber').innerText = formatMoney(totalAR);
+            document.getElementById('dash-dividas').innerText = formatMoney(totalDividas);
+            document.getElementById('dash-recebido').innerText = formatMoney(totalRecebido);
+            document.getElementById('dash-metas').innerText = `${qtd} cadastrada${qtd === 1 ? '' : 's'}`;
+            document.getElementById('dash-metas-desc').innerText = `Progresso geral: ${percentual}%`;
+        }
+        function renderRecentActivities() {
+            const container = document.getElementById('recent-activities'); const activities = [];
+            db.dividas.forEach(d => d.pagamentos.forEach(p => activities.push({title:`Pagamento de Dívida: ${d.credor}`,date:p.data,val:-Number(p.valor),type:'Dívida'})));
+            db.areceber.forEach(item => item.recebimentos.forEach(r => activities.push({title:`Recebimento de ${item.nome}`,date:r.data,val:Number(r.valor),type:'Recebimento'})));
+            db.metas.forEach(m => m.depositos.forEach(dep => activities.push({title:`Depósito na meta: ${m.nome}`,date:dep.data,val:Number(dep.valor),type:'Meta'})));
+            activities.sort((a,b) => new Date(b.date) - new Date(a.date));
+            if (!activities.length) { container.innerHTML = `<div class="empty-state" style="padding:20px;border:none;"><p>Nenhuma atividade recente registrada.</p></div>`; return; }
+            container.innerHTML = '';
+            activities.slice(0,5).forEach(act => {
+                const row = document.createElement('div'); row.className = 'activity-item';
+                const info = document.createElement('div'); info.className = 'activity-info';
+                const strong = document.createElement('strong'); strong.textContent = act.title;
+                const span = document.createElement('span'); span.textContent = `${formatDate(act.date)} • ${act.type}`;
+                const val = document.createElement('div'); val.className = 'activity-val'; val.style.color = act.val >= 0 ? 'var(--success)' : 'var(--danger)';
+                val.textContent = `${act.val >= 0 ? '+' : ''}${formatMoney(act.val)}`;
+                info.append(strong,span); row.append(info,val); container.appendChild(row);
+            });
+        }
+        function exportData() {
+            const blob = new Blob([JSON.stringify(db,null,2)], {type:'application/json;charset=utf-8'});
+            const url = URL.createObjectURL(blob), a = document.createElement('a');
+            a.href = url; a.download = `ribeiro_backup_${localToday()}.json`; document.body.appendChild(a); a.click(); a.remove();
+            URL.revokeObjectURL(url); showToast('Backup exportado com sucesso!');
+        }
+        function importDataPrompt() {
+            const input = document.createElement('input'); input.type = 'file'; input.accept = '.json,application/json';
+            input.onchange = e => {
+                const file = e.target.files && e.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = event => {
+                    try {
+                        const parsed = JSON.parse(event.target.result);
+                        if (parsed && Array.isArray(parsed.dividas) && Array.isArray(parsed.areceber) && Array.isArray(parsed.metas)) {
+                            if (confirm('Tem certeza que deseja substituir os dados atuais pelos do arquivo de backup?')) {
+                                db = parsed; normalizeDB(); saveToStorage(); renderDividas(); renderAReceber(); renderMetas(); renderRecentActivities(); showToast('Dados importados com sucesso!');
+                            }
+                        } else alert('Arquivo de backup inválido.');
+                    } catch (err) { alert('Erro ao ler o arquivo JSON.'); }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+    </script>
+</body>
+</html>
